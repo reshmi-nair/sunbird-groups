@@ -36,6 +36,7 @@ public class UserGroupActor extends BaseActor {
      */
     private void createGroup(Request actorMessage) {
         logger.info("CreateGroup method call");
+
     }
 
 }

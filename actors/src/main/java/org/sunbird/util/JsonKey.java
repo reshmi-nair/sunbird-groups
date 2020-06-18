@@ -28,6 +28,6 @@ public interface JsonKey {
   String ATTRIBUTE = "attribute";
   String ERRORS = "errors";
   String SUCCESS = "success";
-
+  String GROUP_ID = "groupId";
 
 }

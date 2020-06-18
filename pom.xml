@@ -34,5 +34,6 @@
         <module>actors</module>
         <module>sunbird-actor</module>
         <module>service</module>
+        <module>cassandra-utils</module>
     </modules>
 </project>
