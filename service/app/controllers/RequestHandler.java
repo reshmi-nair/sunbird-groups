@@ -7,12 +7,12 @@ import org.sunbird.message.IResponseMessage;
 import org.sunbird.message.ResponseCode;
 import org.sunbird.request.Request;
 import org.sunbird.response.Response;
+import org.sunbird.util.JsonKey;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Result;
 import play.mvc.Results;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
-import utils.JsonKey;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;

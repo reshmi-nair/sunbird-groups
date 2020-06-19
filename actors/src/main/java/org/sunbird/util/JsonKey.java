@@ -1,4 +1,4 @@
-package utils;
+package org.sunbird.util;
 
 /**
  * This interface will contains all the constants that's used throughout this application and shared between User and Org module.
