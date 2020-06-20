@@ -1,6 +1,7 @@
 package org.sunbird.helper;
 
 import com.datastax.driver.core.Session;
+import org.sunbird.BaseException;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public interface CassandraConnectionManager {
    *
    * @param hosts
    */
-  void createConnection(String[] hosts);
+  void createConnection(String[] hosts) throws BaseException;
 
   /**
    * Method to get the cassandra session oject on basis of keyspace name provided .

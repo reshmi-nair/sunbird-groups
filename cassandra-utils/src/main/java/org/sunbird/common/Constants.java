@@ -6,9 +6,11 @@ package org.sunbird.common;
 public interface Constants {
 
   // CASSANDRA CONFIG PROPERTIES
+  public static final String SUNBIRD_CASSANDRA_CONSISTENCY_LEVEL =
+          "sunbird_cassandra_consistency_level";
   public static final String CORE_CONNECTIONS_PER_HOST_FOR_LOCAL = "coreConnectionsPerHostForLocal";
   public static final String CORE_CONNECTIONS_PER_HOST_FOR_REMOTE =
-      "coreConnectionsPerHostForRemote";
+          "coreConnectionsPerHostForRemote";
   public static final String MAX_CONNECTIONS_PER_HOST_FOR_LOCAl = "maxConnectionsPerHostForLocal";
   public static final String MAX_CONNECTIONS_PER_HOST_FOR_REMOTE = "maxConnectionsPerHostForRemote";
   public static final String MAX_REQUEST_PER_CONNECTION = "maxRequestsPerConnection";
@@ -53,13 +55,21 @@ public interface Constants {
   public static final String IF_NOT_EXISTS = " IF NOT EXISTS;";
   public static final String EXCEPTION_MSG_FETCH = "Exception occurred while fetching record from ";
   public static final String EXCEPTION_MSG_UPSERT =
-      "Exception occured while upserting record from ";
+          "Exception occured while upserting record from ";
   public static final String EXCEPTION_MSG_DELETE =
-      "Exception occurred while deleting record from ";
+          "Exception occurred while deleting record from ";
   public static final String EXCEPTION_MSG_UPDATE = "Exception occurred while updating record to ";
   public static final String LTE = "<=";
   public static final String LT = "<";
   public static final String GTE = ">=";
   public static final String GT = ">";
   public static final String ID = "id";
+
+  public static final String UNKNOWN_IDENTIFIER = "Unknown identifier ";
+  public static final String UNDEFINED_IDENTIFIER = "Undefined column name ";
+  public static final String PRIMARY_KEY = "PK";
+  public static final String NON_PRIMARY_KEY = "NonPK";
+  public static final String OBJECT_TYPE = "objectType";
+  public static final String INSERT = "insert";
+  public static final String STANDALONE_MODE = "standalone";
 }

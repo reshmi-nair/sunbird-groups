@@ -7,19 +7,20 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select.Where;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sunbird.BaseException;
 import org.sunbird.cassandraannotation.ClusteringKey;
 import org.sunbird.cassandraannotation.PartitioningKey;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.CassandraPropertyReader;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.helper.CassandraPropertyReader;
+import org.sunbird.message.IResponseMessage;
+import org.sunbird.message.ResponseCode;
+import org.sunbird.response.Response;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,8 +31,10 @@ import java.util.stream.Collectors;
 public final class CassandraUtil {
 
   private static final CassandraPropertyReader propertiesCache =
-      CassandraPropertyReader.getInstance();
+          CassandraPropertyReader.getInstance();
   private static final String SERIAL_VERSION_UID = "serialVersionUID";
+  
+  private static Logger logger = LoggerFactory.getLogger(CassandraUtil.class);
 
   private CassandraUtil() {}
 
@@ -58,7 +61,7 @@ public final class CassandraUtil {
       }
     }
     query.append(commaSepValueBuilder + Constants.CLOSING_BRACE);
-    ProjectLogger.log(query.toString());
+    logger.info(query.toString());
     return query.toString();
   }
 
@@ -82,7 +85,7 @@ public final class CassandraUtil {
               .forEach(entry -> rowMap.put(entry.getKey(), row.getObject(entry.getValue())));
           responseList.add(rowMap);
         });
-    ProjectLogger.log(responseList.toString());
+    logger.info(responseList.toString());
     response.put(Constants.RESPONSE, responseList);
     return response;
   }
@@ -115,7 +118,7 @@ public final class CassandraUtil {
     query.append(String.join(" = ? ,", key));
     query.append(
         Constants.EQUAL_WITH_QUE_MARK + Constants.WHERE_ID + Constants.EQUAL_WITH_QUE_MARK);
-    ProjectLogger.log(query.toString());
+    logger.info(query.toString());
     return query.toString();
   }
 
@@ -140,18 +143,18 @@ public final class CassandraUtil {
             + Constants.IDENTIFIER
             + Constants.EQUAL
             + " ?; ");
-    ProjectLogger.log(query.toString());
+    logger.info(query.toString());
     return query.toString();
   }
 
   public static String processExceptionForUnknownIdentifier(Exception e) {
     // Unknown identifier
-    return ProjectUtil.formatMessage(
-            ResponseCode.invalidPropertyError.getErrorMessage(),
+    return MessageFormat.format(
+            IResponseMessage.INVALID_PROPERTY_ERROR,
             e.getMessage()
-                .replace(JsonKey.UNKNOWN_IDENTIFIER, "")
-                .replace(JsonKey.UNDEFINED_IDENTIFIER, ""))
-        .trim();
+                    .replace(Constants.UNKNOWN_IDENTIFIER, "")
+                    .replace(Constants.UNDEFINED_IDENTIFIER, ""))
+            .trim();
   }
 
   /**
@@ -162,7 +165,7 @@ public final class CassandraUtil {
    * @return Map containing two submap with keys PK(containing primary key attributes) and
    *     NonPk(containing updatable attributes).
    */
-  public static <T> Map<String, Map<String, Object>> batchUpdateQuery(T clazz) {
+  public static <T> Map<String, Map<String, Object>> batchUpdateQuery(T clazz) throws BaseException {
     Field[] fieldList = clazz.getClass().getDeclaredFields();
 
     Map<String, Object> primaryKeyMap = new HashMap<>();
@@ -194,15 +197,15 @@ public final class CassandraUtil {
         }
       }
     } catch (Exception ex) {
-      ProjectLogger.log("Exception occurred - batchUpdateQuery", ex);
-      throw new ProjectCommonException(
-          ResponseCode.SERVER_ERROR.getErrorCode(),
-          ResponseCode.SERVER_ERROR.getErrorMessage(),
-          ResponseCode.SERVER_ERROR.getResponseCode());
+      logger.error("Exception occurred - batchUpdateQuery", ex);
+      throw new BaseException(
+              IResponseMessage.SERVER_ERROR,
+              IResponseMessage.SERVER_ERROR,
+              ResponseCode.SERVER_ERROR.getCode());
     }
     Map<String, Map<String, Object>> map = new HashMap<>();
-    map.put(JsonKey.PRIMARY_KEY, primaryKeyMap);
-    map.put(JsonKey.NON_PRIMARY_KEY, nonPKMap);
+    map.put(Constants.PRIMARY_KEY, primaryKeyMap);
+    map.put(Constants.NON_PRIMARY_KEY, nonPKMap);
     return map;
   }
 
@@ -212,7 +215,7 @@ public final class CassandraUtil {
    * @param clazz class of Model class corresponding to table.
    * @return Map containing primary key attributes.
    */
-  public static <T> Map<String, Object> getPrimaryKey(T clazz) {
+  public static <T> Map<String, Object> getPrimaryKey(T clazz) throws BaseException {
     Field[] fieldList = clazz.getClass().getDeclaredFields();
     Map<String, Object> primaryKeyMap = new HashMap<>();
 
@@ -241,11 +244,11 @@ public final class CassandraUtil {
         }
       }
     } catch (Exception ex) {
-      ProjectLogger.log("Exception occurred - getPrimaryKey", ex);
-      throw new ProjectCommonException(
-          ResponseCode.SERVER_ERROR.getErrorCode(),
-          ResponseCode.SERVER_ERROR.getErrorMessage(),
-          ResponseCode.SERVER_ERROR.getResponseCode());
+      logger.error("Exception occurred - getPrimaryKey", ex);
+      throw new BaseException(
+              IResponseMessage.SERVER_ERROR,
+              IResponseMessage.SERVER_ERROR,
+              ResponseCode.SERVER_ERROR.getCode());
     }
     return primaryKeyMap;
   }

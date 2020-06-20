@@ -7,16 +7,19 @@ import javax.inject.Inject;
 
 import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.sunbird.Application;
 import org.sunbird.BaseException;
 import org.sunbird.message.Localizer;
 import org.sunbird.request.Request;
-import org.sunbird.util.JsonKey;
+import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Results;
+import utils.JsonKey;
 import utils.RequestMapper;
+import utils.RequestValidatorFunction;
 
 /**
  * This controller we can use for writing some common method to handel api request.
@@ -54,6 +57,30 @@ public class BaseController extends Controller {
     }
 
     /**
+     * this method will take org.sunbird.Request and a validation function and lastly operation(Actor operation)
+     * this method is validating the request and ,
+     * this method is used to handle all the request type which has requestBody
+     *
+     * @param request
+     * @param validatorFunction
+     * @param operation
+     * @return
+     */
+    public CompletionStage<Result> handleRequest(play.mvc.Http.Request req,Request request, RequestValidatorFunction validatorFunction, String operation) {
+        try {
+            if (validatorFunction != null) {
+                validatorFunction.apply(request);
+            }
+            return new RequestHandler().handleRequest(request, httpExecutionContext, operation,req);
+        } catch (BaseException ex) {
+            return CompletableFuture.supplyAsync(() -> StringUtils.EMPTY)
+                    .thenApply(result -> badRequest(Json.toJson(RequestHandler.prepareFailureMessage(ex,req))));
+        } catch (Exception ex) {
+            return CompletableFuture.supplyAsync(() -> StringUtils.EMPTY)
+                    .thenApply(result -> internalServerError(Json.toJson(RequestHandler.prepareFailureMessage(ex,req))));        }
+    }
+
+    /**
      * this method will take play.mv.http request and a validation function and lastly operation(Actor operation)
      * this method is validating the request and ,
      * it will map the request to our sunbird Request class and make a call to requestHandler which is internally calling ask to actor
@@ -64,39 +91,22 @@ public class BaseController extends Controller {
      * @param operation
      * @return
      */
-    public CompletionStage<Result> handleRequest(play.mvc.Http.Request req, Function validatorFunction, String operation) {
+    public CompletionStage<Result> handleRequest(play.mvc.Http.Request req, RequestValidatorFunction validatorFunction, String operation) {
         try {
             Request request = (Request) RequestMapper.mapRequest(req, Request.class);
             if (validatorFunction != null) {
                 validatorFunction.apply(request);
             }
-            return new RequestHandler().handleRequest(request, httpExecutionContext, operation);
+            return new RequestHandler().handleRequest(request, httpExecutionContext, operation,req);
         } catch (BaseException ex) {
-            return RequestHandler.handleFailureResponse(ex, httpExecutionContext);
+            return CompletableFuture.supplyAsync(() -> StringUtils.EMPTY)
+                    .thenApply(result -> badRequest(Json.toJson(RequestHandler.prepareFailureMessage(ex,req))));
         } catch (Exception ex) {
-            return RequestHandler.handleFailureResponse(ex, httpExecutionContext);
+            return CompletableFuture.supplyAsync(() -> StringUtils.EMPTY)
+                    .thenApply(result -> internalServerError(Json.toJson(RequestHandler.prepareFailureMessage(ex,req))));
         }
-
     }
 
-    /**
-     * this method is used to handle the only GET requests.
-     *
-     * @param req
-     * @param operation
-     * @return
-     */
-    public CompletionStage<Result> handleRequest(Request req, String operation) {
-        try {
-            return new RequestHandler().handleRequest(req, httpExecutionContext, operation);
-        } catch (BaseException ex) {
-            return RequestHandler.handleFailureResponse(ex, httpExecutionContext);
-        } catch (Exception ex) {
-            return RequestHandler.handleFailureResponse(ex, httpExecutionContext);
-        }
-
-
-    }
 
     public CompletionStage<Result> handleRequest() {
         CompletableFuture<String> cf = new CompletableFuture<>();
@@ -160,5 +170,4 @@ public class BaseController extends Controller {
             return JsonKey.EMPTY_STRING;
         }
     }
-
 }

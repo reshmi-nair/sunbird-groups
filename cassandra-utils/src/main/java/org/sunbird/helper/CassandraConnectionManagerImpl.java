@@ -3,10 +3,12 @@ package org.sunbird.helper;
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sunbird.BaseException;
 import org.sunbird.common.Constants;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.*;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.message.IResponseMessage;
+import org.sunbird.message.ResponseCode;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,13 +19,14 @@ import java.util.stream.Collectors;
 public class CassandraConnectionManagerImpl implements CassandraConnectionManager {
   private static Cluster cluster;
   private static Map<String, Session> cassandraSessionMap = new ConcurrentHashMap<>(2);
+  private static Logger logger = LoggerFactory.getLogger(CassandraConnectionManagerImpl.class);
 
   static {
     registerShutDownHook();
   }
 
   @Override
-  public void createConnection(String[] hosts) {
+  public void createConnection(String[] hosts) throws BaseException{
     createCassandraConnection(hosts);
   }
 
@@ -39,7 +42,7 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
     }
   }
 
-  private void createCassandraConnection(String[] hosts) {
+  private void createCassandraConnection(String[] hosts) throws BaseException {
     try {
       PropertiesCache cache = PropertiesCache.getInstance();
       PoolingOptions poolingOptions = new PoolingOptions();
@@ -67,21 +70,21 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
 
       final Metadata metadata = cluster.getMetadata();
       String msg = String.format("Connected to cluster: %s", metadata.getClusterName());
-      ProjectLogger.log(msg);
+      logger.info(msg);
 
       for (final Host host : metadata.getAllHosts()) {
         msg =
             String.format(
                 "Datacenter: %s; Host: %s; Rack: %s",
                 host.getDatacenter(), host.getAddress(), host.getRack());
-        ProjectLogger.log(msg);
+        logger.info(msg);
       }
     } catch (Exception e) {
-      ProjectLogger.log("Error occured while creating cassandra connection :", e);
-      throw new ProjectCommonException(
-          ResponseCode.internalError.getErrorCode(),
-          e.getMessage(),
-          ResponseCode.SERVER_ERROR.getResponseCode());
+      logger.info("Error occured while creating cassandra connection :", e);
+      throw new BaseException(
+              IResponseMessage.INTERNAL_ERROR,
+              e.getMessage(),
+          ResponseCode.SERVER_ERROR.getCode());
     }
   }
 
@@ -95,9 +98,8 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
             .withPoolingOptions(poolingOptions);
 
     ConsistencyLevel consistencyLevel = getConsistencyLevel();
-    ProjectLogger.log(
-        "CassandraConnectionManagerImpl:createCluster: Consistency level = " + consistencyLevel,
-        LoggerEnum.INFO);
+    logger.info(
+        "CassandraConnectionManagerImpl:createCluster: Consistency level = " + consistencyLevel);
 
     if (consistencyLevel != null) {
       builder.withQueryOptions(new QueryOptions().setConsistencyLevel(consistencyLevel));
@@ -107,21 +109,19 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
   }
 
   private static ConsistencyLevel getConsistencyLevel() {
-    String consistency = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_CASSANDRA_CONSISTENCY_LEVEL);
+    String consistency = PropertiesCache.getConfigValue(Constants.SUNBIRD_CASSANDRA_CONSISTENCY_LEVEL);
 
-    ProjectLogger.log(
-        "CassandraConnectionManagerImpl:getConsistencyLevel: level = " + consistency,
-        LoggerEnum.INFO);
+    logger.info(
+        "CassandraConnectionManagerImpl:getConsistencyLevel: level = " + consistency);
 
     if (StringUtils.isBlank(consistency)) return null;
 
     try {
       return ConsistencyLevel.valueOf(consistency.toUpperCase());
     } catch (IllegalArgumentException exception) {
-      ProjectLogger.log(
+      logger.error(
           "CassandraConnectionManagerImpl:getConsistencyLevel: Exception occurred with error message = "
-              + exception.getMessage(),
-          LoggerEnum.ERROR);
+              + exception.getMessage());
     }
     return null;
   }
@@ -138,7 +138,7 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
   public static void registerShutDownHook() {
     Runtime runtime = Runtime.getRuntime();
     runtime.addShutdownHook(new ResourceCleanUp());
-    ProjectLogger.log("Cassandra ShutDownHook registered.");
+    logger.info("Cassandra ShutDownHook registered.");
   }
 
   /**
@@ -149,14 +149,14 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
     @Override
     public void run() {
       try {
-        ProjectLogger.log("started resource cleanup Cassandra.");
+        logger.info("started resource cleanup Cassandra.");
         for (Map.Entry<String, Session> entry : cassandraSessionMap.entrySet()) {
           cassandraSessionMap.get(entry.getKey()).close();
         }
         cluster.close();
-        ProjectLogger.log("completed resource cleanup Cassandra.");
+        logger.info("completed resource cleanup Cassandra.");
       } catch (Exception ex) {
-        ProjectLogger.log("Error :", ex);
+        logger.info("Error :", ex);
       }
     }
   }
