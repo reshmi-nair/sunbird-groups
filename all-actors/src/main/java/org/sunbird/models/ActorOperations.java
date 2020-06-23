@@ -1,7 +1,7 @@
 package org.sunbird.models;
 
 /**
- * This enum will contains different operation for user groups
+ * This enum will contains different operation for group APIs
  *
  */
 public enum ActorOperations {

@@ -8,13 +8,12 @@ import play.mvc.Result;
 
 import java.util.concurrent.CompletionStage;
 
-public class UserGroupController extends BaseController {
+public class GroupController extends BaseController {
 
-    public CompletionStage<Result> createGroup() {
-        CompletionStage<Result> response = handleRequest(request(),
+    public CompletionStage<Result> createGroup(Http.Request httpRequest) {
+        CompletionStage<Result> response = handleRequest(httpRequest,
                 request -> {
                     Request req = (Request) request;
-                    // new CertValidator().validateGenerateCertRequest(req);
                     return null;
                 },
                 ActorOperations.CREATE_GROUP.getValue());

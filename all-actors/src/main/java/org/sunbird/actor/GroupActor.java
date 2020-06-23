@@ -3,19 +3,21 @@ package org.sunbird.actor;
 import org.sunbird.BaseActor;
 import org.sunbird.BaseException;
 import org.sunbird.actor.core.ActorConfig;
+import org.sunbird.models.Group;
 import org.sunbird.request.Request;
 import org.sunbird.response.Response;
-import org.sunbird.service.UserGroupService;
-import org.sunbird.service.impl.UserGroupServiceImpl;
+import org.sunbird.service.GroupService;
+import org.sunbird.service.impl.GroupServiceImpl;
 import org.sunbird.util.JsonKey;
 
 @ActorConfig(
         tasks = {"createGroup", "updateGroup"},
         asyncTasks = {}
 )
-public class UserGroupActor extends BaseActor {
+public class GroupActor extends BaseActor {
 
-    private UserGroupService groupService = UserGroupServiceImpl.getInstance();
+    private GroupService groupService = GroupServiceImpl.getInstance();
+
 
     @Override
     public void onReceive(Request request) throws Throwable {
@@ -28,7 +30,7 @@ public class UserGroupActor extends BaseActor {
                 //updateGroup(request);
                 break;
             default:
-                onReceiveUnsupportedMessage("UserGroupActor");
+                onReceiveUnsupportedMessage("GroupActor");
         }
     }
     /**
@@ -38,9 +40,13 @@ public class UserGroupActor extends BaseActor {
      */
     private void createGroup(Request actorMessage) throws BaseException {
         logger.info("CreateGroup method call");
-//        String groupId = groupService.createUserGroup("Group1");
+
+        Group group = new Group();
+        group.setName((String)actorMessage.getRequest().get(JsonKey.GROUP_NAME));
+        group.setDescription((String)actorMessage.getRequest().get(JsonKey.GROUP_DESC));
+        String groupId = groupService.createGroup(group);
         Response response = new Response();
-        response.put(JsonKey.GROUP_ID, "groupId");
+        response.put(JsonKey.GROUP_ID, groupId);
         sender().tell(response, self());
     }
 
