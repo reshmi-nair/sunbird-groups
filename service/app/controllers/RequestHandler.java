@@ -7,13 +7,13 @@ import org.sunbird.message.IResponseMessage;
 import org.sunbird.message.ResponseCode;
 import org.sunbird.request.Request;
 import org.sunbird.response.Response;
+import org.sunbird.util.JsonKey;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Result;
 import play.mvc.Results;
 import scala.compat.java8.FutureConverters;
 import scala.concurrent.Future;
-import utils.JsonKey;
 
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;

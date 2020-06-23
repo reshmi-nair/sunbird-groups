@@ -33,4 +33,7 @@ public interface JsonKey {
   String USER_DB = "user_db";
   String SUNBIRD_CASSANDRA_IP = "sunbird_cassandra_host";
   String SUNBIRD = "sunbird";
+  String API_VERSION="v1";
+  String GROUP_DESC = "description";
+  String GROUP_NAME = "name";
 }

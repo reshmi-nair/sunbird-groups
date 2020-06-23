@@ -15,11 +15,11 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.message.IResponseMessage;
 import org.sunbird.message.Localizer;
 import org.sunbird.response.Response;
+import org.sunbird.util.JsonKey;
 import play.Application;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.FiniteDuration;
-import utils.JsonKey;
 
 import java.util.Map;
 
