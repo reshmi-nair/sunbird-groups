@@ -17,7 +17,7 @@ public class DBUtil {
         // this map will be used during cassandra data base interaction.
         // this map will have each DB name and it's corresponding keyspace and table
         // name.
-        dbInfoMap.put(JsonKey.USER_DB, getDbInfoObject(KEY_SPACE_NAME, "user_group"));
+        dbInfoMap.put(JsonKey.USER_DB, getDbInfoObject(KEY_SPACE_NAME, "group"));
     }
 
     /**

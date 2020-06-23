@@ -6,11 +6,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
 
 /**
- * @desc POJO class for UserGroup
+ * @desc POJO class for Group
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserGroup implements Serializable {
+public class Group implements Serializable {
 
     private static final long serialVersionUID = 7529802960267784945L;
 

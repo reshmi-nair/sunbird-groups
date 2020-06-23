@@ -11,13 +11,12 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.BaseException;
-import org.sunbird.actor.UserGroupActor;
-import org.sunbird.helper.ServiceFactory;
+import org.sunbird.actor.GroupActor;
 import org.sunbird.models.ActorOperations;
 import org.sunbird.request.Request;
 import org.sunbird.response.Response;
-import org.sunbird.service.UserGroupService;
-import org.sunbird.service.impl.UserGroupServiceImpl;
+import org.sunbird.service.GroupService;
+import org.sunbird.service.impl.GroupServiceImpl;
 
 import java.time.Duration;
 
@@ -25,14 +24,14 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-        UserGroupService.class,
-        UserGroupServiceImpl.class
+        GroupService.class,
+        GroupServiceImpl.class
 })
 @PowerMockIgnore({"javax.management.*"})
-public class UserGroupActorTest {
+public class GroupActorTest {
     static ActorSystem system;
-    private final Props props = Props.create(UserGroupActor.class);
-    private static UserGroupService groupService;
+    private final Props props = Props.create(GroupActor.class);
+    private static GroupService groupService;
 
     @BeforeClass
     public static void setup() {
@@ -47,17 +46,17 @@ public class UserGroupActorTest {
 
     @Before
     public void beforeEachTest() {
-        groupService = mock(UserGroupServiceImpl.class);
+        groupService = mock(GroupServiceImpl.class);
     }
     @Ignore
     @Test(expected = BaseException.class)
-    public void testCreateUserGroup() {
+    public void testCreateGroup() {
         TestKit probe = new TestKit(system);
         ActorRef subject = system.actorOf(props);
         Request reqObj = new Request();
         reqObj.setOperation(ActorOperations.CREATE_GROUP.getValue());
         try {
-        when(groupService.createUserGroup(Mockito.anyObject()))
+        when(groupService.createGroup(Mockito.anyObject()))
                 .thenReturn(Mockito.anyString());
         subject.tell(reqObj, probe.getRef());
         Response res = probe.expectMsgClass(Duration.ofSeconds(10), Response.class);

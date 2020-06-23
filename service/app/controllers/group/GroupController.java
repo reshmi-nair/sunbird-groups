@@ -8,7 +8,7 @@ import play.mvc.Result;
 
 import java.util.concurrent.CompletionStage;
 
-public class UserGroupController extends BaseController {
+public class GroupController extends BaseController {
 
     public CompletionStage<Result> createGroup(Http.Request httpRequest) {
         CompletionStage<Result> response = handleRequest(httpRequest,
