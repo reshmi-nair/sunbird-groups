@@ -10,5 +10,5 @@ GET  /:service/health                      @controllers.health.HealthController.
 # Logs Management APIs
 # POST    /v1.3/system/log/update           @controllers.logsmanager.LogController.setLogLevel()
 # User group management APIs
-POST	/v1/user/group/create				            @controllers.group.UserGroupController.createGroup()
+POST	/v1/user/group/create				            @controllers.group.UserGroupController.createGroup(request: play.mvc.Http.Request)
 # POST	/v1/user/group/update				            @controllers.group.UserGroupController.updateGroup()

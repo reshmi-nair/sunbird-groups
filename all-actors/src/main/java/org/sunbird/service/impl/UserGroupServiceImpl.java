@@ -20,10 +20,7 @@ public class UserGroupServiceImpl implements UserGroupService {
     }
 
     @Override
-    public String createUserGroup(String groupName) throws BaseException {
-
-        UserGroup group = new UserGroup();
-        group.setName(groupName);
+    public String createUserGroup(UserGroup group) throws BaseException {
         group.setId(UUID.randomUUID().toString());
         String groupId = groupDao.createUserGroup(group);
         return groupId;
