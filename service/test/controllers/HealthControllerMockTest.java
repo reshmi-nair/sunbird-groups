@@ -1,9 +1,12 @@
 package controllers;
 
 import static org.junit.Assert.assertEquals;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 import akka.actor.ActorRef;
 import javax.ws.rs.core.Response;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -21,12 +24,17 @@ import scala.concurrent.Await;
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
 public class HealthControllerMockTest extends TestHelper {
 
-  @Test
-  public void testOnServerHandlerPasses() throws BaseException {
+  @BeforeClass
+  public static void setUp() throws Exception {
     setupMock();
     HealthController healthController = Mockito.mock(HealthController.class);
-    PowerMockito.when(healthController.createSBRequest(Mockito.any(Http.Request.class),Mockito.anyString()))
-        .thenThrow(new RuntimeException("induced due to buggy server impl"));
+    when(healthController.createSBRequest(Mockito.any(Http.Request.class),Mockito.anyString()))
+            .thenThrow(new RuntimeException("induced due to buggy server impl"));
+
+  }
+  @Test
+  public void testOnServerHandlerPasses() throws BaseException {
+
 
     Result result = performTest("/service/health", "GET", null, headerMap);
     System.out.println(getResponseStatus(result));

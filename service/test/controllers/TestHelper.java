@@ -1,5 +1,6 @@
 package controllers;
 
+import static org.powermock.api.mockito.PowerMockito.*;
 import static play.test.Helpers.route;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,8 +9,15 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.exception.BaseException;
+import org.sunbird.helper.CassandraConnectionManager;
+import org.sunbird.helper.CassandraConnectionManagerImpl;
+import org.sunbird.helper.CassandraConnectionMngrFactory;
 import org.sunbird.util.JsonKey;
 import play.Application;
 import play.libs.Json;
@@ -17,18 +25,24 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({
+        CassandraConnectionMngrFactory.class
+})
 /** This a helper class for All the Controllers Test */
 public class TestHelper {
   // One and only app
-  private static Application app = Helpers.fakeApplication();
+  private static Application app;
 
-  protected org.sunbird.Application sbApp;
+  protected static org.sunbird.Application sbApp;
 
   // Let test cases create one if needed. This will be private.
   private final ObjectMapper mapperObj = new ObjectMapper();
 
   // Only for derivations
   protected Map<String, String> headerMap;
+
+  private static final CassandraConnectionManager cassandraConnectionManager = mock(CassandraConnectionManagerImpl.class);;
 
   public TestHelper() {
     headerMap = new WeakHashMap<>();
@@ -47,6 +61,7 @@ public class TestHelper {
    * @return Result
    */
   public Result performTest(String url, String method, Map requestMap, Map headerMap) {
+    setupCassandraMock();
     String data = mapToJson(requestMap);
     Http.RequestBuilder req;
     if (StringUtils.isNotBlank(data) && !requestMap.isEmpty()) {
@@ -59,11 +74,19 @@ public class TestHelper {
     Result result = route(app, req);
     return result;
   }
-
-  public final void setupMock() throws BaseException {
-    sbApp = PowerMockito.mock(org.sunbird.Application.class);
+  public static void setupCassandraMock() {
+    PowerMockito.mockStatic(CassandraConnectionMngrFactory.class);
+    when(CassandraConnectionMngrFactory.getInstance()).thenReturn(cassandraConnectionManager);
+    try {
+      doNothing().when(cassandraConnectionManager).createConnection(Mockito.anyObject());
+    }catch (Exception e){}
+  }
+  public static void setupMock() throws BaseException {
+    setupCassandraMock();
+    app = Helpers.fakeApplication();
+    sbApp = mock(org.sunbird.Application.class);
     PowerMockito.mockStatic(org.sunbird.Application.class);
-    PowerMockito.when(org.sunbird.Application.getInstance()).thenReturn(sbApp);
+    when(org.sunbird.Application.getInstance()).thenReturn(sbApp);
     sbApp.init();
   }
 

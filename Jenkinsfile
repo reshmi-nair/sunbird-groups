@@ -42,7 +42,7 @@ node('build-slave') {
             stage('Package') {
                 dir('service') {
                     sh 'mvn play2:dist'
-                    sh 'cp target/group-service-1.0.0-dist.zip ../'
+                    sh 'cp target/service-1.0.0-SNAPSHOT-dist.zip ../'
                 }
                 sh('chmod 777 ./build.sh')
                 sh("./build.sh ${build_tag} ${env.NODE_NAME} ${hub_org}")

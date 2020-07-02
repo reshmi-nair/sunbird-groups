@@ -7,13 +7,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.message.IResponseMessage;
 import org.sunbird.message.Localizer;
 import org.sunbird.response.Response;
 import org.sunbird.util.JsonKey;
 import play.mvc.Result;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({org.sunbird.Application.class})
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
 public class BaseControllerTest extends TestHelper {
   Localizer localizer = Localizer.getInstance();
 
@@ -23,6 +31,11 @@ public class BaseControllerTest extends TestHelper {
     } catch (Exception e) {
       return JsonKey.EMPTY_STRING;
     }
+  }
+
+  @BeforeClass
+  public static void setUp() throws Exception {
+    setupMock();
   }
 
   @Test
